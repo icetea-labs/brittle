@@ -1,62 +1,128 @@
 #!/usr/bin/env node
 
 const program = require("commander");
-const Git = require("nodegit");
 const fs = require("fs");
 const { spawn } = require("child_process");
 const { TxOp, ContractMode } = require("./constant");
-const { IceTeaWeb3 } = require("./tweb3");
-const ecc = require("./icetea/helper/ecc");
+const { IceTeaWeb3 } = require("iceteaweb3");
+const emoji = require("node-emoji");
+const { logo, create } = require("./command");
+const { toPublicKey } = require("./util");
 
-program.command("init [name]").action(async name => {
-  await Git.Clone("https://github.com/TradaTech/rustea", `./${name}`);
-  return spawn("npm", ["install", "--prefix", `./${name}`], {
-    stdio: "inherit"
-  }).on("exit", function(error) {
-    if (!error) {
-      console.log(`cd ${name} and enjoy!`);
-    }
+program
+  .command("init <name>")
+  .description("initialize a project")
+  .action(async name => {
+    logo();
+    await create("https://github.com/TradaTech/rustea", name);
   });
-});
 
-program.command("compile").action(() => {
-  return spawn("cargo", ["build"], {
-    stdio: "inherit"
-  }).on("exit", function(error) {
-    if (!error) {
-      console.log(`compile completed!`);
-    }
+program
+  .command("unbox <github_url> <name>")
+  .description("using a template from github")
+  .action(async (github_url, name) => {
+    logo();
+    await create(github_url, name);
   });
-});
 
-program.command("build").action(() => {
-  return spawn("npm", ["run", "build"], {
-    stdio: "inherit"
-  }).on("exit", function(error) {
-    if (!error) {
-      console.log(`build completed!`);
-    }
+program
+  .command("compile")
+  .description("try compile to wasm file")
+  .action(() => {
+    return spawn("cargo", ["build"], {
+      stdio: "inherit"
+    }).on("exit", function(error) {
+      if (!error) {
+        const lines = [
+          "",
+          `${emoji.get("hammer")}   Successfully compiled project`,
+          ""
+        ];
+        lines.forEach(line => console.log(line));
+      }
+    });
   });
-});
 
-program.command("deploy").action(async () => {
-  const { privateKey = "", url = "" } = require(`${process.cwd()}/icetea.js`);
-  let src = fs.readFileSync("./pkg/hello_world_bg.wasm", "base64");
-  const from = ecc.toPublicKey(privateKey);
+program
+  .command("build")
+  .description("export wasm file")
+  .action(() => {
+    return spawn("npm", ["run", "build"], {
+      stdio: "inherit"
+    }).on("exit", function(error) {
+      if (!error) {
+        const lines = [
+          "",
+          `${emoji.get("package")}   Successfully built project`,
+          ""
+        ];
+        lines.forEach(line => console.log(line));
+      }
+    });
+  });
 
-  const tweb3 = new IceTeaWeb3(url);
-  const data = {
-    op: TxOp.DEPLOY_CONTRACT,
-    mode: ContractMode.WASM,
-    src
-  };
+program
+  .command("deploy")
+  .description("deploy wasm file to network")
+  .action(async () => {
+    const {
+      privateKey = "",
+      url = "",
+      parameters = [],
+      value = 0,
+      fee = 0
+    } = require(`${process.cwd()}/icetea.js`);
+    let src = fs.readFileSync(`${process.cwd()}/pkg/hello_world_bg.wasm`, "base64");
+    const from = toPublicKey(privateKey);
 
-  const result = await tweb3.sendTransactionCommit(
-    { from, value: 0, fee: 0, data },
-    privateKey
-  );
-  console.log(result);
-  await tweb3.close();
-});
+    const tweb3 = new IceTeaWeb3(url);
+    const data = {
+      op: TxOp.DEPLOY_CONTRACT,
+      mode: ContractMode.WASM,
+      src,
+      params: parameters
+    };
+
+    const result = await tweb3.sendTransactionCommit(
+      { from, value, fee, data },
+      privateKey
+    );
+    console.log(result);
+    await tweb3.close();
+  });
+
+program
+  .command("call <mode> <address> <method> [parameters...]")
+  .description("call contract")
+  .action(async (mode, address, method, parameters) => {
+    parameters = parameters.map(param => typeof param === "number" ? param.toString(): param)
+    const {
+      privateKey = "",
+      url = "",
+    } = require(`${process.cwd()}/icetea.js`);
+    const tweb3 = new IceTeaWeb3(url);
+    const from = toPublicKey(privateKey);
+
+    const data = {
+      op: TxOp.CALL_CONTRACT,
+      name: method,
+      params: parameters
+    };
+
+    let result;
+    switch(mode) {
+      case 'update':
+        result = await tweb3.sendTransactionCommit({ from, to: address, data }, privateKey);
+        break;
+      case 'view':
+        result = await tweb3.callReadonlyContractMethod(address, method, parameters);
+        break;
+      case 'pure':
+        result = await tweb3.callPureContractMethod(address, method, parameters);
+        break;
+    }
+    console.log(result);
+    await tweb3.close();
+  });
 
 program.parse(process.argv);
