@@ -3,11 +3,11 @@
 const program = require("commander");
 const fs = require("fs");
 const { spawn } = require("child_process");
-const { TxOp, ContractMode } = require("./constant");
-const { IceTeaWeb3 } = require("iceteaweb3");
+const { TxOp, ContractMode, ecc } = require("icetea-common");
+const { IceTeaWeb3 } = require("icetea-web3");
 const emoji = require("node-emoji");
 const { logo, create } = require("./command");
-const { toPublicKey } = require("./util");
+const { toPublicKey } = ecc;
 
 program
   .command("init <name>")

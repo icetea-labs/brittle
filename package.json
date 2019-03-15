@@ -1,20 +1,21 @@
 {
   "name": "brittle",
   "version": "0.1.0",
-  "description": "",
+  "description": "A cli for icetea blockchain.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Trada Tech",
+  "license": "MIT",
   "dependencies": {
     "chalk": "^2.4.2",
     "cli-step": "^1.0.2",
     "commander": "2.19.0",
     "eosjs-ecc": "^4.0.4",
-    "iceteaweb3": "git+https://github.com/TradaTech/iceteaweb3.git",
+    "icetea-common": "github:TradaTech/icetea-common",
+    "icetea-web3": "github:TradaTech/icetea-web3",
     "node-emoji": "^1.10.0",
     "nodegit": "^0.24.1"
   },
