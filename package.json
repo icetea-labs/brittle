@@ -13,8 +13,8 @@
     "chalk": "^2.4.2",
     "cli-step": "^1.0.2",
     "commander": "2.19.0",
-    "eosjs-ecc": "^4.0.4",
-    "iceteaweb3": "git+https://github.com/TradaTech/iceteaweb3.git",
+    "icetea-common": "git+https://github.com/TradaTech/icetea-common.git",
+    "icetea-web3": "git+https://github.com/TradaTech/iceteaweb3.git",
     "node-emoji": "^1.10.0",
     "nodegit": "^0.24.1"
   },

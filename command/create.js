@@ -3,17 +3,30 @@ const Steps = require("cli-step");
 const chalk = require("chalk");
 const emoji = require("node-emoji");
 const { exec } = require("child_process");
+const { ContractType } = require("../constant");
 
-module.exports = async (githubUrl, name) => {
+module.exports = async (githubUrl, name, type) => {
+  if (githubUrl === "") {
+    switch (type) {
+      case ContractType.RUST:
+        githubUrl = "https://github.com/TradaTech/rustea";
+        break;
+      case ContractType.JS:
+        githubUrl = "https://github.com/TradaTech/jstea";
+        break;
+      case ContractType.DJS:
+        githubUrl = "https://github.com/TradaTech/djstea";
+        break;
+      default:
+        process.exit(1);
+    }
+  }
+
   const steps = new Steps(2);
   let oldStep = null;
   steps.startRecording();
   oldStep = steps
-    .advance(
-      "Cloning",
-      null,
-      `git clone ${githubUrl} ${name}`
-    )
+    .advance("Cloning", null, `git clone ${githubUrl} ${name}`)
     .start();
   try {
     await Git.Clone(githubUrl, `./${name}`);
@@ -46,4 +59,4 @@ module.exports = async (githubUrl, name) => {
       lines.forEach(line => console.log(line));
     }
   });
-}
+};

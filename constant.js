@@ -4,6 +4,12 @@ exports.ContractMode = Object.freeze({
   WASM: 100
 });
 
+exports.ContractType = Object.freeze({
+  JS: "js",
+  DJS: "djs",
+  RUST: "rust"
+});
+
 exports.TxOp = Object.freeze({
   DEPLOY_CONTRACT: 0,
   CALL_CONTRACT: 1,

@@ -3,18 +3,22 @@
 const program = require("commander");
 const fs = require("fs");
 const { spawn } = require("child_process");
-const { TxOp, ContractMode } = require("./constant");
-const { IceTeaWeb3 } = require("iceteaweb3");
+const { TxOp, ContractMode, ContractType } = require("./constant");
+const { IceTeaWeb3 } = require("icetea-web3");
 const emoji = require("node-emoji");
 const { logo, create } = require("./command");
-const { toPublicKey } = require("./util");
+const validate = require("./validate");
+const { ecc } = require("icetea-common");
 
 program
   .command("init <name>")
   .description("initialize a project")
-  .action(async name => {
+  .option("-t, --type [type]", `project type (${Object.values(ContractType)})`)
+  .action(async (name, options) => {
+    const type = options.type || ContractType.RUST;
     logo();
-    await create("https://github.com/TradaTech/rustea", name);
+    validate.include(type, Object.values(ContractType));
+    await create("", name, type);
   });
 
 program
@@ -27,8 +31,17 @@ program
 
 program
   .command("compile")
-  .description("try compile to wasm file")
+  .description("compile project")
   .action(() => {
+    const { type = ContractType.RUST } = require(`${process.cwd()}/icetea.js`);
+    validate.include(type, Object.values(ContractType));
+    if (type != ContractType.RUST) {
+      console.log(
+        `    ${emoji.get("pray")}   ${type} project does not require compile`
+      );
+      process.exit(0);
+    }
+
     return spawn("cargo", ["build"], {
       stdio: "inherit"
     }).on("exit", function(error) {
@@ -45,8 +58,17 @@ program
 
 program
   .command("build")
-  .description("export wasm file")
+  .description("build project")
   .action(() => {
+    const { type = ContractType.RUST } = require(`${process.cwd()}/icetea.js`);
+    validate.include(type, Object.values(ContractType));
+    if (type != ContractType.RUST) {
+      console.log(
+        `    ${emoji.get("pray")}   ${type} project does not require build`
+      );
+      process.exit(0);
+    }
+
     return spawn("npm", ["run", "build"], {
       stdio: "inherit"
     }).on("exit", function(error) {
@@ -63,26 +85,48 @@ program
 
 program
   .command("deploy")
-  .description("deploy wasm file to network")
+  .description("deploy project")
   .action(async () => {
     const {
+      type = ContractType.RUST,
       privateKey = "",
       url = "",
       parameters = [],
       value = 0,
       fee = 0
     } = require(`${process.cwd()}/icetea.js`);
-    let src = fs.readFileSync(`${process.cwd()}/pkg/hello_world_bg.wasm`, "base64");
-    const from = toPublicKey(privateKey);
+    validate.include(type, Object.values(ContractType));
 
+    let src, mode;
+    const from = ecc.toPublicKey(privateKey);
     const tweb3 = new IceTeaWeb3(url);
+
+    switch (type) {
+      case ContractType.RUST:
+        src = fs.readFileSync(
+          `${process.cwd()}/pkg/hello_world_bg.wasm`,
+          "base64"
+        );
+        mode = ContractMode.WASM;
+        break;
+      case ContractType.JS:
+        src = fs.readFileSync(`${process.cwd()}/src/index.js`);
+        mode = ContractMode.JS_RAW;
+        break;
+      case ContractType.DJS:
+        src = fs.readFileSync(`${process.cwd()}/src/index.djs`);
+        mode = ContractMode.JS_DECORATED;
+        break;
+      default:
+        process.exit(1);
+    }
+
     const data = {
       op: TxOp.DEPLOY_CONTRACT,
-      mode: ContractMode.WASM,
+      mode,
       src,
       params: parameters
     };
-
     const result = await tweb3.sendTransactionCommit(
       { from, value, fee, data },
       privateKey
@@ -94,14 +138,13 @@ program
 program
   .command("call <mode> <address> <method> [parameters...]")
   .description("call contract")
-  .action(async (mode, address, method, parameters) => {
-    parameters = parameters.map(param => typeof param === "number" ? param.toString(): param)
-    const {
-      privateKey = "",
-      url = "",
-    } = require(`${process.cwd()}/icetea.js`);
+  .action(async (mode, address, method, parameters = []) => {
+    parameters = parameters.map(param =>
+      typeof param === "number" ? param.toString() : param
+    );
+    const { privateKey = "", url = "" } = require(`${process.cwd()}/icetea.js`);
     const tweb3 = new IceTeaWeb3(url);
-    const from = toPublicKey(privateKey);
+    const from = ecc.toPublicKey(privateKey);
 
     const data = {
       op: TxOp.CALL_CONTRACT,
@@ -110,15 +153,26 @@ program
     };
 
     let result;
-    switch(mode) {
-      case 'update':
-        result = await tweb3.sendTransactionCommit({ from, to: address, data }, privateKey);
+    switch (mode) {
+      case "update":
+        result = await tweb3.sendTransactionCommit(
+          { from, to: address, data },
+          privateKey
+        );
         break;
-      case 'view':
-        result = await tweb3.callReadonlyContractMethod(address, method, parameters);
+      case "view":
+        result = await tweb3.callReadonlyContractMethod(
+          address,
+          method,
+          parameters
+        );
         break;
-      case 'pure':
-        result = await tweb3.callPureContractMethod(address, method, parameters);
+      case "pure":
+        result = await tweb3.callPureContractMethod(
+          address,
+          method,
+          parameters
+        );
         break;
     }
     console.log(result);
