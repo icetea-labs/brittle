@@ -12,10 +12,10 @@ module.exports = async (githubUrl, name, type) => {
         githubUrl = "https://github.com/TradaTech/rustea";
         break;
       case ContractType.JS:
-        githubUrl = "https://github.com/TradaTech/jstea";
+        githubUrl = "https://github.com/TradaTech/brittle-template-js-bare";
         break;
       case ContractType.DJS:
-        githubUrl = "https://github.com/TradaTech/djstea";
+        githubUrl = "https://github.com/TradaTech/brittle-template-js-bare";
         break;
       default:
         process.exit(1);
