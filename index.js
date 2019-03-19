@@ -2,12 +2,12 @@
 
 const program = require("commander");
 const { spawn } = require("child_process");
-const { TxOp, ContractType } = require("./constant");
+const { ContractType } = require("./constant");
 const { IceTeaWeb3 } = require("icetea-web3");
 const emoji = require("node-emoji");
 const { logo, create } = require("./command");
 const validate = require("./validate");
-const { ecc } = require("icetea-common");
+const { TxOp, ecc } = require("icetea-common");
 const Deployer = require("./deployer");
 
 program

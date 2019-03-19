@@ -2,7 +2,8 @@ const path = require("path");
 const fs = require("fs");
 const { ecc } = require("icetea-common");
 const { IceTeaWeb3 } = require("icetea-web3");
-const { TxOp, ContractType, ContractMode } = require("./constant");
+const { TxOp, ContractMode } = require("icetea-common");
+const { ContractType } = require("./constant");
 
 function loadContract(filePath) {
   const extension = path.extname(filePath);
