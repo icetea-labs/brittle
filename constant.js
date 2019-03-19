@@ -7,7 +7,7 @@ exports.ContractMode = Object.freeze({
 exports.ContractType = Object.freeze({
   JS: "js",
   DJS: "djs",
-  RUST: "rust"
+  WASM: "wasm"
 });
 
 exports.TxOp = Object.freeze({

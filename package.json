@@ -1,6 +1,6 @@
 {
   "name": "brittle",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,13 +10,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "chalk": "^2.4.2",
-    "cli-step": "^1.0.2",
+    "chalk": "2.4.2",
+    "cli-step": "1.0.2",
     "commander": "2.19.0",
     "icetea-common": "git+https://github.com/TradaTech/icetea-common.git",
     "icetea-web3": "git+https://github.com/TradaTech/iceteaweb3.git",
-    "node-emoji": "^1.10.0",
-    "nodegit": "^0.24.1"
+    "node-emoji": "1.10.0",
+    "nodegit": "0.24.1"
   },
   "bin": {
     "brittle": "index.js"

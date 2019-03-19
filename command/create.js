@@ -8,7 +8,7 @@ const { ContractType } = require("../constant");
 module.exports = async (githubUrl, name, type) => {
   if (githubUrl === "") {
     switch (type) {
-      case ContractType.RUST:
+      case ContractType.WASM:
         githubUrl = "https://github.com/TradaTech/rustea";
         break;
       case ContractType.JS:

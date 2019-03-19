@@ -1,21 +1,21 @@
 #!/usr/bin/env node
 
 const program = require("commander");
-const fs = require("fs");
 const { spawn } = require("child_process");
-const { TxOp, ContractMode, ContractType } = require("./constant");
+const { TxOp, ContractType } = require("./constant");
 const { IceTeaWeb3 } = require("icetea-web3");
 const emoji = require("node-emoji");
 const { logo, create } = require("./command");
 const validate = require("./validate");
 const { ecc } = require("icetea-common");
+const Deployer = require("./deployer");
 
 program
   .command("init <name>")
   .description("initialize a project")
   .option("-t, --type [type]", `project type (${Object.values(ContractType)})`)
   .action(async (name, options) => {
-    const type = options.type || ContractType.RUST;
+    const type = options.type || ContractType.WASM;
     logo();
     validate.include(type, Object.values(ContractType));
     await create("", name, type);
@@ -33,15 +33,6 @@ program
   .command("compile")
   .description("compile project")
   .action(() => {
-    const { type = ContractType.RUST } = require(`${process.cwd()}/icetea.js`);
-    validate.include(type, Object.values(ContractType));
-    if (type != ContractType.RUST) {
-      console.log(
-        `    ${emoji.get("pray")}   ${type} project does not require compile`
-      );
-      process.exit(0);
-    }
-
     return spawn("cargo", ["build"], {
       stdio: "inherit"
     }).on("exit", function(error) {
@@ -52,6 +43,10 @@ program
           ""
         ];
         lines.forEach(line => console.log(line));
+      } else {
+        console.log(
+          `    ${emoji.get("pray")}   only rust smart contract need compile`
+        );
       }
     });
   });
@@ -60,15 +55,6 @@ program
   .command("build")
   .description("build project")
   .action(() => {
-    const { type = ContractType.RUST } = require(`${process.cwd()}/icetea.js`);
-    validate.include(type, Object.values(ContractType));
-    if (type != ContractType.RUST) {
-      console.log(
-        `    ${emoji.get("pray")}   ${type} project does not require build`
-      );
-      process.exit(0);
-    }
-
     return spawn("npm", ["run", "build"], {
       stdio: "inherit"
     }).on("exit", function(error) {
@@ -79,6 +65,10 @@ program
           ""
         ];
         lines.forEach(line => console.log(line));
+      } else {
+        console.log(
+          `    ${emoji.get("pray")}   only rust smart contract need build`
+        );
       }
     });
   });
@@ -88,51 +78,13 @@ program
   .description("deploy project")
   .action(async () => {
     const {
-      type = ContractType.RUST,
       privateKey = "",
       url = "",
-      parameters = [],
       value = 0,
       fee = 0
     } = require(`${process.cwd()}/icetea.js`);
-    validate.include(type, Object.values(ContractType));
-
-    let src, mode;
-    const from = ecc.toPublicKey(privateKey);
-    const tweb3 = new IceTeaWeb3(url);
-
-    switch (type) {
-      case ContractType.RUST:
-        src = fs.readFileSync(
-          `${process.cwd()}/pkg/hello_world_bg.wasm`,
-          "base64"
-        );
-        mode = ContractMode.WASM;
-        break;
-      case ContractType.JS:
-        src = fs.readFileSync(`${process.cwd()}/src/index.js`);
-        mode = ContractMode.JS_RAW;
-        break;
-      case ContractType.DJS:
-        src = fs.readFileSync(`${process.cwd()}/src/index.djs`);
-        mode = ContractMode.JS_DECORATED;
-        break;
-      default:
-        process.exit(1);
-    }
-
-    const data = {
-      op: TxOp.DEPLOY_CONTRACT,
-      mode,
-      src,
-      params: parameters
-    };
-    const result = await tweb3.sendTransactionCommit(
-      { from, value, fee, data },
-      privateKey
-    );
-    console.log(result);
-    await tweb3.close();
+    const deploy = require(`${process.cwd()}/deploy.js`);
+    return deploy(new Deployer(privateKey, url, value, fee));
   });
 
 program
