@@ -9,19 +9,26 @@ module.exports = async (githubUrl, name, type) => {
   if (githubUrl === "") {
     switch (type) {
       case ContractType.WASM:
-        githubUrl = "https://github.com/TradaTech/rustea";
+        githubUrl = "https://github.com/brittle-box/rustea";
         break;
       case ContractType.JS:
-        githubUrl = "https://github.com/TradaTech/brittle-template-js-bare";
+        githubUrl = "https://github.com/brittle-box/brittle-template-js-bare";
         break;
       case ContractType.DJS:
-        githubUrl = "https://github.com/TradaTech/brittle-template-js-bare";
+        githubUrl = "https://github.com/brittle-box/brittle-template-js-bare";
         break;
       default:
         process.exit(1);
     }
   }
 
+  if (!githubUrl.startsWith("https://github.com/")) {
+    githubUrl = `https://github.com/brittle-box/${githubUrl}`;
+  }
+
+  if (!name) {
+    name = githubUrl.split("/").pop();
+  }
   const steps = new Steps(2);
   let oldStep = null;
   steps.startRecording();

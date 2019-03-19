@@ -11,7 +11,7 @@ const { TxOp, ecc } = require("icetea-common");
 const Deployer = require("./deployer");
 
 program
-  .command("init <name>")
+  .command("init [name]")
   .description("initialize a project")
   .option("-t, --type [type]", `project type (${Object.values(ContractType)})`)
   .action(async (name, options) => {
@@ -22,7 +22,7 @@ program
   });
 
 program
-  .command("unbox <github_url> <name>")
+  .command("unbox <github_url> [name]")
   .description("using a template from github")
   .action(async (github_url, name) => {
     logo();
