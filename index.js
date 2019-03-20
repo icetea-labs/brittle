@@ -6,7 +6,7 @@ const { ContractType } = require("./constant");
 const { IceTeaWeb3 } = require("icetea-web3");
 const emoji = require("node-emoji");
 const { logo, create } = require("./command");
-const validate = require("./validate");
+const { mustProjectType, emitError, getNetworkConfig } = require("./utils");
 const { TxOp, ecc } = require("icetea-common");
 const Deployer = require("./deployer");
 
@@ -17,7 +17,7 @@ program
   .action(async (name, options) => {
     const type = options.type || ContractType.WASM;
     logo();
-    validate.include(type, Object.values(ContractType));
+    mustProjectType(type);
     await create("", name, type);
   });
 
@@ -44,9 +44,7 @@ program
         ];
         lines.forEach(line => console.log(line));
       } else {
-        console.log(
-          `    ${emoji.get("pray")}   only rust smart contract need compile`
-        );
+        emitError("Only rust smart contract need compile");
       }
     });
   });
@@ -66,9 +64,7 @@ program
         ];
         lines.forEach(line => console.log(line));
       } else {
-        console.log(
-          `    ${emoji.get("pray")}   only rust smart contract need build`
-        );
+        emitError("Only rust smart contract need build");
       }
     });
   });
@@ -83,9 +79,9 @@ program
       privateKey = "",
       url = "",
       value = 0,
-      fee = 0
-    } = require(`${process.cwd()}/icetea.js`).networks[network];
-    const deploy = require(`${process.cwd()}/deploy.js`);
+      fee = 0,
+      deploy
+    } = getNetworkConfig(network, true);
     return deploy(new Deployer(privateKey, url, value, fee));
   });
 
@@ -95,10 +91,7 @@ program
   .option("-n, --network [network]", `network`)
   .action(async (mode, address, method, parameters = [], options) => {
     const network = options.network || "private";
-    const {
-      privateKey = "",
-      url = ""
-    } = require(`${process.cwd()}/icetea.js`).networks[network];
+    const { privateKey = "", url = "" } = getNetworkConfig(network, false);
     const tweb3 = new IceTeaWeb3(url);
     const from = ecc.toPublicKey(privateKey);
 
