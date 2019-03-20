@@ -76,13 +76,15 @@ program
 program
   .command("deploy")
   .description("deploy project")
-  .action(async () => {
+  .option("-n, --network [network]", `network`)
+  .action(async options => {
+    const network = options.network || "private";
     const {
       privateKey = "",
       url = "",
       value = 0,
       fee = 0
-    } = require(`${process.cwd()}/icetea.js`);
+    } = require(`${process.cwd()}/icetea.js`).networks[network];
     const deploy = require(`${process.cwd()}/deploy.js`);
     return deploy(new Deployer(privateKey, url, value, fee));
   });
@@ -90,11 +92,13 @@ program
 program
   .command("call <mode> <address> <method> [parameters...]")
   .description("call contract")
-  .action(async (mode, address, method, parameters = []) => {
-    parameters = parameters.map(param =>
-      typeof param === "number" ? param.toString() : param
-    );
-    const { privateKey = "", url = "" } = require(`${process.cwd()}/icetea.js`);
+  .option("-n, --network [network]", `network`)
+  .action(async (mode, address, method, parameters = [], options) => {
+    const network = options.network || "private";
+    const {
+      privateKey = "",
+      url = ""
+    } = require(`${process.cwd()}/icetea.js`).networks[network];
     const tweb3 = new IceTeaWeb3(url);
     const from = ecc.toPublicKey(privateKey);
 
