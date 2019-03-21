@@ -1,12 +1,10 @@
 #!/usr/bin/env node
 
 const program = require("commander");
-const { spawn } = require("child_process");
 const { ContractType } = require("./constant");
 const { IceTeaWeb3 } = require("icetea-web3");
-const emoji = require("node-emoji");
-const { logo, create } = require("./command");
-const { mustProjectType, emitError, getNetworkConfig } = require("./utils");
+const { logo, create, build } = require("./command");
+const { mustProjectType, getNetworkConfig } = require("./utils");
 const { TxOp, ecc } = require("icetea-common");
 const Deployer = require("./deployer");
 
@@ -30,43 +28,10 @@ program
   });
 
 program
-  .command("compile")
-  .description("compile project")
-  .action(() => {
-    return spawn("cargo", ["build"], {
-      stdio: "inherit"
-    }).on("exit", function(error) {
-      if (!error) {
-        const lines = [
-          "",
-          `${emoji.get("hammer")}   Successfully compiled project`,
-          ""
-        ];
-        lines.forEach(line => console.log(line));
-      } else {
-        emitError("Only rust smart contract need compile");
-      }
-    });
-  });
-
-program
   .command("build")
   .description("build project")
   .action(() => {
-    return spawn("npm", ["run", "build"], {
-      stdio: "inherit"
-    }).on("exit", function(error) {
-      if (!error) {
-        const lines = [
-          "",
-          `${emoji.get("package")}   Successfully built project`,
-          ""
-        ];
-        lines.forEach(line => console.log(line));
-      } else {
-        emitError("Only rust smart contract need build");
-      }
-    });
+    return build();
   });
 
 program
