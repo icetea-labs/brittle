@@ -3,3 +3,5 @@ exports.ContractType = Object.freeze({
   DJS: "djs",
   WASM: "wasm"
 });
+
+exports.rustcEndpoint = "https://icetea-rust.herokuapp.com/rustc";

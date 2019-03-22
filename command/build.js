@@ -1,7 +1,9 @@
 const Steps = require("cli-step");
 const chalk = require("chalk");
 const fs = require("fs");
+const axios = require("axios");
 const { exec, mkdir } = require("./common");
+const { rustcEndpoint } = require("../constant");
 
 const homeDir = process.env["HOME"];
 const pkgDir = `${process.cwd()}/pkg`;
@@ -33,7 +35,21 @@ async function build(file) {
   await exec(`rm -rf ${buildDir}`);
 }
 
-module.exports = async () => {
+async function buildRemote(file) {
+  const fileName = file.split(".")[0];
+  const content = fs.readFileSync(`${srcDir}/${file}`);
+  const result = await axios.post(rustcEndpoint, {
+    code: content.toString()
+  });
+  const data = result.data;
+  if (data.success) {
+    fs.writeFileSync(`${pkgDir}/${fileName}.wasm`, data.output, "base64");
+  } else {
+    throw new Error(data.message);
+  }
+}
+
+module.exports = async remote => {
   const steps = new Steps(2);
   let oldStep = null;
   steps.startRecording();
@@ -60,7 +76,7 @@ module.exports = async () => {
     await Promise.all(
       files.map(file => {
         if (file.endsWith(".rs")) {
-          return build(file);
+          return remote ? buildRemote(file) : build(file);
         }
       })
     );

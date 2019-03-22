@@ -30,14 +30,16 @@ program
 program
   .command("build")
   .description("build project")
-  .action(() => {
-    return build();
+  .option("-r, --remote", "remote build without rust")
+  .action(options => {
+    const remote = options.remote || false;
+    return build(remote);
   });
 
 program
   .command("deploy")
   .description("deploy project")
-  .option("-n, --network [network]", `network`)
+  .option("-n, --network [network]", "network")
   .action(async options => {
     const network = options.network || "private";
     const {
@@ -53,7 +55,7 @@ program
 program
   .command("call <mode> <address> <method> [parameters...]")
   .description("call contract")
-  .option("-n, --network [network]", `network`)
+  .option("-n, --network [network]", "network")
   .action(async (mode, address, method, parameters = [], options) => {
     const network = options.network || "private";
     const { privateKey = "", url = "" } = getNetworkConfig(network, false);
