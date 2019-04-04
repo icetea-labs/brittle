@@ -17,7 +17,8 @@
     "icetea-common": "git+https://github.com/TradaTech/icetea-common.git",
     "icetea-web3": "git+https://github.com/TradaTech/iceteaweb3.git",
     "node-emoji": "1.10.0",
-    "nodegit": "0.24.1"
+    "nodegit": "0.24.1",
+    "sunseed": "git+https://github.com/TradaTech/sunseed.git"
   },
   "bin": {
     "brittle": "index.js"

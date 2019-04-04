@@ -2,6 +2,7 @@ const Steps = require("cli-step");
 const chalk = require("chalk");
 const fs = require("fs");
 const axios = require("axios");
+const sunseed = require("sunseed");
 const { exec, mkdir } = require("./common");
 const { rustcEndpoint } = require("../constant");
 
@@ -49,7 +50,27 @@ async function buildRemote(file) {
   }
 }
 
-module.exports = async remote => {
+async function buildDjs(file, optimize) {
+  const fileName = file.split(".")[0];
+  const content = fs.readFileSync(`${srcDir}/${file}`).toString();
+  let options = {
+    prettier: true,
+    context: srcDir
+  };
+  if (optimize) {
+    options = {
+      minify: true,
+      context: srcDir
+    };
+  }
+  const src = await sunseed.transpile(content, options);
+  if (src) {
+    fs.writeFileSync(`${pkgDir}/${fileName}.js`, src);
+  }
+}
+
+module.exports = async options => {
+  const { remote, optimize } = options;
   const steps = new Steps(2);
   let oldStep = null;
   steps.startRecording();
@@ -60,14 +81,22 @@ module.exports = async remote => {
       "cargo build --target wasm32-unknown-unknown --release"
     )
     .start();
-  try {
-    await exec(`${cargoCmd} build --target wasm32-unknown-unknown --release`);
-  } catch (e) {
-    oldStep.error("Preparing failed");
-    console.error(chalk.red(e.toString()));
-    process.exit(1);
+
+  if (!fs.existsSync(`${process.cwd()}/Cargo.toml`)) {
+    oldStep.success(
+      "Preparing skip (Cargo.toml not found)",
+      "white_check_mark"
+    );
+  } else {
+    try {
+      await exec(`${cargoCmd} build --target wasm32-unknown-unknown --release`);
+      oldStep.success("Preparing", "white_check_mark");
+    } catch (e) {
+      oldStep.error("Preparing failed");
+      console.error(chalk.red(e.toString()));
+      process.exit(1);
+    }
   }
-  oldStep.success("Preparing", "white_check_mark");
 
   oldStep = steps.advance("Building").start();
   try {
@@ -77,6 +106,12 @@ module.exports = async remote => {
       files.map(file => {
         if (file.endsWith(".rs")) {
           return remote ? buildRemote(file) : build(file);
+        }
+        if (file.endsWith(".djs")) {
+          if (remote) {
+            throw new Error("remote djs build is not supported");
+          }
+          return buildDjs(file, optimize);
         }
       })
     );

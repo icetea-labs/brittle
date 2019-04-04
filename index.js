@@ -30,10 +30,10 @@ program
 program
   .command("build")
   .description("build project")
-  .option("-r, --remote", "remote build without rust")
+  .option("-r, --remote", "remote build (only for wasm)")
+  .option("-O, --optimize", "optimize (only for djs)")
   .action(options => {
-    const remote = options.remote || false;
-    return build(remote);
+    return build(options || {});
   });
 
 program
