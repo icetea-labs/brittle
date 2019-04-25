@@ -60,35 +60,26 @@ program
     const network = options.network || "private";
     const { privateKey = "", url = "" } = getNetworkConfig(network, false);
     const tweb3 = new IceTeaWeb3(url);
-    const from = ecc.toPublicKey(privateKey);
-
-    const data = {
-      op: TxOp.CALL_CONTRACT,
-      name: method,
-      params: parameters
-    };
+    tweb3.wallet.importAccount(privateKey);
+    const contract = tweb3.contract(address);
+    const methodFunc = contract.methods[method];
+    // const from = ecc.toPublicKey(privateKey);
+    // const data = {
+    //   op: TxOp.CALL_CONTRACT,
+    //   name: method,
+    //   params: parameters
+    // };
 
     let result;
     switch (mode) {
       case "update":
-        result = await tweb3.sendTransactionCommit(
-          { from, to: address, data },
-          privateKey
-        );
+        result = await methodFunc(...parameters).sendCommit();
         break;
       case "view":
-        result = await tweb3.callReadonlyContractMethod(
-          address,
-          method,
-          parameters
-        );
+        result = await methodFunc(...parameters).call();
         break;
       case "pure":
-        result = await tweb3.callPureContractMethod(
-          address,
-          method,
-          parameters
-        );
+        result = await methodFunc(...parameters).callPure();
         break;
     }
     console.log(result);

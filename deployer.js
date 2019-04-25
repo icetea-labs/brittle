@@ -35,25 +35,31 @@ module.exports = class {
 
   async deploy(filePath, params = [], options = {}) {
     let { src, mode } = loadContract(filePath);
-    const from = ecc.toPublicKey(this.privateKey);
     const tweb3 = new IceTeaWeb3(this.url);
-    const value = options.value || this.value;
-    const fee = options.fee || this.fee;
-
-    const data = {
-      op: TxOp.DEPLOY_CONTRACT,
-      mode,
-      src,
-      params
-    };
-    const result = await tweb3.sendTransactionCommit(
-      { from, value, fee, data },
-      this.privateKey
-    );
+    tweb3.wallet.importAccount(this.privateKey);
+    // const from = ecc.toPublicKey(this.privateKey);
+    // const value = options.value || this.value;
+    // const fee = options.fee || this.fee;
+    // const data = {
+    //   op: TxOp.DEPLOY_CONTRACT,
+    //   mode,
+    //   src,
+    //   params
+    // };
+    // const result = await tweb3.sendTransactionCommit(
+    //   { from, value, fee, data },
+    //   this.privateKey
+    // );
+    let result;
+    if (mode === ContractMode.WASM) {
+      result = await tweb3.deployWasm(src, params, options);
+    } else {
+      result = await tweb3.deployJs(src, params, options);
+    }
     await tweb3.close();
     console.log(result);
-    if (result && result.tags && result.tags["tx.to"]) {
-      return { address: result.tags["tx.to"] };
+    if (result && result.address) {
+      return { address: result.address };
     }
     throw new Error("Cannot get deployed contract address");
   }
