@@ -42,3 +42,12 @@ exports.getNetworkConfig = (network, isDeploy) => {
   const deploy = require(deployPath);
   return Object.assign(connectionResult, { deploy });
 };
+
+exports.getBuildOptions = () => {
+  const projectPath = `${process.cwd()}/icetea.js`;
+  if (!fs.existsSync(projectPath)) {
+    exports.emitError(`Project config file is not in ${projectPath}`);
+  }
+  const project = require(projectPath);
+  return project.build || {};
+};

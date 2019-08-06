@@ -4,7 +4,11 @@ const program = require("commander");
 const { ContractType } = require("./constant");
 const { IceTeaWeb3 } = require("icetea-web3");
 const { logo, create, build } = require("./command");
-const { mustProjectType, getNetworkConfig } = require("./utils");
+const {
+  mustProjectType,
+  getNetworkConfig,
+  getBuildOptions
+} = require("./utils");
 const { TxOp, ecc } = require("icetea-common");
 const Deployer = require("./deployer");
 
@@ -33,7 +37,8 @@ program
   .option("-r, --remote", "remote build (only for wasm)")
   .option("-O, --optimize", "optimize (only for djs)")
   .action(options => {
-    return build(options || {});
+    const buildOptions = getBuildOptions();
+    return build(Object.assign(options, { buildOptions }) || {});
   });
 
 program

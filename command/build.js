@@ -50,7 +50,7 @@ async function buildRemote(file) {
   }
 }
 
-async function buildDjs(file, optimize) {
+async function buildDjs(file, optimize, buildOptions) {
   const fileName = file.split(".")[0];
   const content = fs.readFileSync(`${srcDir}/${file}`).toString();
   let options = {
@@ -63,6 +63,9 @@ async function buildDjs(file, optimize) {
       context: srcDir
     };
   }
+
+  options.buildOptions = buildOptions;
+
   const src = await sunseed.transpile(content, options);
   if (src) {
     fs.writeFileSync(`${pkgDir}/${fileName}.js`, src);
@@ -70,7 +73,7 @@ async function buildDjs(file, optimize) {
 }
 
 module.exports = async options => {
-  const { remote, optimize } = options;
+  const { remote, optimize, buildOptions } = options;
   const steps = new Steps(2);
   let oldStep = null;
   steps.startRecording();
@@ -111,7 +114,7 @@ module.exports = async options => {
           if (remote) {
             throw new Error("remote djs build is not supported");
           }
-          return buildDjs(file, optimize);
+          return buildDjs(file, optimize, buildOptions);
         }
       })
     );
