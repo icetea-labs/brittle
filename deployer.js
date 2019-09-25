@@ -1,8 +1,7 @@
 const path = require("path");
 const fs = require("fs");
-const { ecc } = require("icetea-common");
-const { IceTeaWeb3 } = require("icetea-web3");
-const { TxOp, ContractMode } = require("icetea-common");
+const { IceteaWeb3 } = require("@iceteachain/web3");
+const { ContractMode } = require("@iceteachain/common");
 const { ContractType } = require("./constant");
 
 function loadContract(filePath) {
@@ -35,7 +34,7 @@ module.exports = class {
 
   async deploy(filePath, params = [], options = {}) {
     let { src, mode } = loadContract(filePath);
-    const tweb3 = new IceTeaWeb3(this.url);
+    const tweb3 = new IceteaWeb3(this.url);
     tweb3.wallet.importAccount(this.privateKey);
     // const from = ecc.toPublicKey(this.privateKey);
     // const value = options.value || this.value;

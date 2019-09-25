@@ -2,10 +2,9 @@
 
 const program = require("commander");
 const { ContractType } = require("./constant");
-const { IceTeaWeb3 } = require("icetea-web3");
+const { IceteaWeb3 } = require("@iceteachain/web3");
 const { logo, create, build } = require("./command");
 const { mustProjectType, getNetworkConfig } = require("./utils");
-const { TxOp, ecc } = require("icetea-common");
 const Deployer = require("./deployer");
 
 program
@@ -59,7 +58,7 @@ program
   .action(async (mode, address, method, parameters = [], options) => {
     const network = options.network || "private";
     const { privateKey = "", url = "" } = getNetworkConfig(network, false);
-    const tweb3 = new IceTeaWeb3(url);
+    const tweb3 = new IceteaWeb3(url);
     tweb3.wallet.importAccount(privateKey);
     const contract = tweb3.contract(address);
     const methodFunc = contract.methods[method];
