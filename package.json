@@ -10,6 +10,7 @@
   "author": "Trada Tech",
   "license": "MIT",
   "dependencies": {
+    "@iceteachain/sunseed": "git+https://github.com/TradaTech/sunseed.git",
     "@iceteachain/web3": "^0.1.14",
     "axios": "^0.19.0",
     "chalk": "^2.4.2",
