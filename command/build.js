@@ -2,7 +2,7 @@ const Steps = require("cli-step");
 const chalk = require("chalk");
 const fs = require("fs");
 const axios = require("axios");
-const sunseed = require("sunseed");
+const sunseed = require("@iceteachain/sunseed");
 const { exec, mkdir } = require("./common");
 const { rustcEndpoint } = require("../constant");
 
