@@ -12,7 +12,7 @@
   "dependencies": {
     "@iceteachain/sunseed": "git+https://github.com/TradaTech/sunseed.git",
     "@iceteachain/web3": "^0.1.14",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "chalk": "^2.4.2",
     "cli-step": "^1.0.2",
     "commander": "^3.0.2",
